@@ -12991,7 +12991,7 @@ var MAG = (function () {
     const addPt = pos => { try { lassoPoints.push(getCoords(pos[0], pos[1], cropCanvas)); drawCropView(); } catch (e) {} };
     function loop() {
       st.raf = 0; if (st.id1 === null && !st.mdown) return;
-      if (st.mode === null && drawing() && st.moved && st.pos && Z.edge(st.pos)) addPt(st.pos);
+      if (st.mode === null && st.id1 === null && st.mdown && drawing() && st.moved && st.pos && Z.edge(st.pos)) addPt(st.pos);   // solo mouse: col dito la vista si sposta con due dita
       st.raf = requestAnimationFrame(loop);
     }
     function endStroke() { try { isDrawingLasso = false; hideMagnifier(); drawCropView(); } catch (e) {} }
@@ -13056,13 +13056,13 @@ var MAG = (function () {
     function loop() {
       st.raf = 0; if (st.id1 === null) return;
       const pos = ptr.get(st.id1);
-      try { if (st.mode === null && pos && st.moved && E && E.drag && Z.edge(pos)) fake(pos); } catch (e) {}
+      try { if (st.mode === null && st.mouse && pos && st.moved && E && E.drag && Z.edge(pos)) fake(pos); } catch (e) {}   // solo mouse
       st.raf = requestAnimationFrame(loop);
     }
     host.addEventListener('pointerdown', e => {
       if (!want() || (e.target !== cv && e.target !== host)) return;
       ptr.set(e.pointerId, [e.clientX, e.clientY]);
-      if (ptr.size === 1) { st.id1 = e.pointerId; st.t0 = Date.now(); st.p0 = [e.clientX, e.clientY]; st.moved = false; st.mode = null; if (!st.raf) st.raf = requestAnimationFrame(loop); return; }
+      if (ptr.size === 1) { st.id1 = e.pointerId; st.mouse = e.pointerType === 'mouse'; st.t0 = Date.now(); st.p0 = [e.clientX, e.clientY]; st.moved = false; st.mode = null; if (!st.raf) st.raf = requestAnimationFrame(loop); return; }
       e.preventDefault(); e.stopImmediatePropagation();
       if (st.mode === 'nav') return;
       let drag = false; try { drag = !!E.drag; } catch (x) {}
@@ -13094,6 +13094,16 @@ var MAG = (function () {
     function sync() { try { const st0 = E ? E.step : null; if (st0 !== last) { last = st0; Z.reset(); } Z.show(want()); } catch (e) {} }
     const ps = window.pedSide; if (typeof ps === 'function') window.pedSide = function () { const r = ps.apply(this, arguments); sync(); return r; };
     setInterval(sync, 600);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* iPad/iPhone: niente filtro sul tipo di file per .animatoon e .personaggio (altrimenti i file restano in grigio) */
+(function () {
+  try {
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (!ios) return;
+    document.querySelectorAll('input[type=file]').forEach(i => { if (/animatoon|personaggio|storystudio/.test(i.getAttribute('accept') || '')) i.removeAttribute('accept'); });
   } catch (e) {}
 })();
 </script>
